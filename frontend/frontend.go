@@ -7,6 +7,7 @@ import (
 )
 
 type FrontEnd interface {
+	Name() string
 	Priority() int
 	Available() bool
 	Question() int

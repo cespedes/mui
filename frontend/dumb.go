@@ -6,21 +6,32 @@ import (
 	"golang.org/x/crypto/ssh/terminal"
 )
 
+type Dumb struct {}
+
 func init() {
-	RegisterFrontEnd(dumb)
+	RegisterFrontEnd(Dumb{})
 }
 
-type Dumb struct {}
+func (z Dumb) Name() string {
+	return "dumb"
+}
+
+func (z Dumb) Priority() int {
+	return 10
+}
 
 func (z Dumb) Available() bool {
 	return true
 }
 
-func read_letter() (byte,error) {
+func read_letter_with_echo() (c byte, err error) {
 	oldState, err := terminal.MakeRaw(0)
 	if err == nil {
 		defer func() {
 			terminal.Restore(0, oldState)
+			if c >= 32 && c <= 126 {
+				fmt.Printf("%c", c)
+			}
 			fmt.Println()
 		}()
 	}
@@ -29,13 +40,14 @@ func read_letter() (byte,error) {
 	if err != nil {
 		return 0, err
 	}
-	return buf[0], nil
+	c = buf[0]
+	return c, nil
 }
 
 func (z Dumb) Question() int {
 	for {
 		fmt.Print("Are you sure you wany yo proceed? [yn] ")
-		c, err := read_letter()
+		c, err := read_letter_with_echo()
 		fmt.Printf("DEBUG: Letter %d\n", c)
 		if err != nil {
 			return 2
@@ -49,9 +61,3 @@ func (z Dumb) Question() int {
 		}
 	}
 }
-
-func (z Dumb) Priority() int {
-	return 10
-}
-
-var dumb Dumb

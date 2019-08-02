@@ -7,11 +7,18 @@ import (
 	"syscall"
 )
 
+type Whiptail struct {}
+
 func init() {
-	RegisterFrontEnd(whiptail)
+	RegisterFrontEnd(Whiptail{})
 }
 
-type Whiptail struct {
+func (z Whiptail) Name() string {
+	return "whiptail"
+}
+
+func (z Whiptail) Priority() int {
+	return 50
 }
 
 func (z Whiptail) Available() bool {
@@ -37,9 +44,3 @@ func (z Whiptail) Question() int {
 	}
 	return 0
 }
-
-func (z Whiptail) Priority() int {
-	return 50
-}
-
-var whiptail Whiptail

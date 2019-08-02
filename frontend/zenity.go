@@ -7,11 +7,18 @@ import (
 	"os/exec"
 )
 
+type Zenity struct {}
+
 func init() {
-	RegisterFrontEnd(zenity)
+	RegisterFrontEnd(Zenity{})
 }
 
-type Zenity struct {
+func (z Zenity) Name() string {
+	return "zenity"
+}
+
+func (z Zenity) Priority() int {
+	return 100
 }
 
 func (z Zenity) Available() bool {
@@ -36,9 +43,3 @@ func (z Zenity) Question() int {
 	}
 	return 0
 }
-
-func (z Zenity) Priority() int {
-	return 100
-}
-
-var zenity Zenity
