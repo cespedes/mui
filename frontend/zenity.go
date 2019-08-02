@@ -25,16 +25,16 @@ func (z Zenity) Available() bool {
 	return true
 }
 
-func (z Zenity) Question() {
+func (z Zenity) Question() int {
 	fmt.Println("Zenity Question")
 	cmd := exec.Command("zenity", "--question")
 	err := cmd.Run()
 	if exiterr, ok := err.(*exec.ExitError); ok {
 		if status, ok := exiterr.Sys().(syscall.WaitStatus); ok {
-			os.Exit(status.ExitStatus())
+			return status.ExitStatus()
 		}
 	}
-	os.Exit(0)
+	return 0
 }
 
 func (z Zenity) Priority() int {

@@ -9,7 +9,7 @@ import (
 type FrontEnd interface {
 	Priority() int
 	Available() bool
-	Question()
+	Question() int
 }
 
 var frontendList = make([]FrontEnd, 0)
@@ -24,10 +24,11 @@ func RegisterFrontEnd(new_frontend FrontEnd) {
 func Question() {
 	for _, f := range frontendList {
 		if f.Available() {
-			f.Question()
+			fmt.Printf("DEBUG: Found frontend with priority %d\n", f.Priority())
+			os.Exit(f.Question())
 			return
 		}
 	}
-	fmt.Println("frontend.Question(): No frontends are available")
+	fmt.Println("DEBUG: frontend.Question(): No frontends are available")
 	os.Exit(1)
 }
