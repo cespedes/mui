@@ -22,7 +22,7 @@ func RegisterFrontEnd(new_frontend FrontEnd) {
 	})
 }
 
-func Question() {
+func Question(args []string) {
 	for _, f := range frontendList {
 		if f.Available() {
 			fmt.Printf("DEBUG: Found frontend with priority %d\n", f.Priority())
