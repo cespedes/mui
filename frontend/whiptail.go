@@ -44,3 +44,7 @@ func (z Whiptail) Question() int {
 	}
 	return 0
 }
+
+func (z Whiptail) Input() string {
+	return "text from whiptail"
+}

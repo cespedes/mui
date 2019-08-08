@@ -48,9 +48,10 @@ var cmdCalendar = Command{
 	Short: "display calendar dialog",
 }
 
-var cmdEntry = Command{
-	Name:  "entry",
-	Short: "display text entry dialog",
+var cmdInput = Command{
+	Name:  "input",
+	Run:   frontend.Input,
+	Short: "display text input dialog",
 }
 
 var cmdInfo = Command{
@@ -59,47 +60,21 @@ var cmdInfo = Command{
 }
 
 /*
-	entry    display text entry dialog
+	input    display text input dialog
 	error    display error dialog
 	scale    display scale dialog
 	progress display progress indication dialog
 	password display password dialog
 	list     display list dialog
+	select
+	radio
+	checkbox
 */
 
 var commands = []Command{
 	cmdQuestion,
 //	cmdCalendar,
-	cmdEntry,
-}
-
-var (
-	flagQuestion = flag.Bool("question", false, "Display question dialog")
-	flagEntry    = flag.Bool("entry",    false, "Display text entry dialog")
-)
-
-var Mui = &Command{
-	UsageLine: "mui",
-	Long: `Mui is a tool to display graphical dialog boxes.
-
-Usage:
-
-	mui <command> [arguments]
-
-The commands are:
-
-	question display question dialog
-	calendar display calendar dialog
-	entry    display text entry dialog
-	error    display error dialog
-	info     display info dialog
-	scale    display scale dialog
-	progress display progress indication dialog
-	password display password dialog
-	list     display list dialog
-
-Use "mui help <command>" for more information about a command.`,
-//	Long: "Mui is a tool to display terminal, X11 (Gtk) or web graphical dialog boxes from shell scripts.",
+	cmdInput,
 }
 
 func printUsage(w io.Writer, cmd *Command) {
@@ -118,7 +93,7 @@ The commands are:
 			fmt.Fprintf(w, "\t%-10s %s\n", c.Name, c.Short)
 		}
 /*
-        entry    display text entry dialog
+        input    display text input dialog
         error    display error dialog
         info     display info dialog
         scale    display scale dialog
@@ -136,9 +111,7 @@ Use "mui help <command>" for more information about a command.`)
 }
 
 func main() {
-	flag.Parse()
-
-	args := flag.Args()
+	args := os.Args[1:]
 	if len(args) < 1 {
 		printUsage(os.Stderr, nil)
 		os.Exit(1)

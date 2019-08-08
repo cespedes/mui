@@ -43,3 +43,7 @@ func (z Zenity) Question() int {
 	}
 	return 0
 }
+
+func (z Zenity) Input() string {
+	return "text from zenity"
+}

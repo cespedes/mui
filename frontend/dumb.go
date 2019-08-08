@@ -61,3 +61,7 @@ func (z Dumb) Question() int {
 		}
 	}
 }
+
+func (z Dumb) Input() string {
+	return "text"
+}

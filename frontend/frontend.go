@@ -11,6 +11,7 @@ type FrontEnd interface {
 	Priority() int
 	Available() bool
 	Question() int
+	Input() string
 }
 
 var frontendList = make([]FrontEnd, 0)
@@ -22,14 +23,32 @@ func RegisterFrontEnd(new_frontend FrontEnd) {
 	})
 }
 
-func Question(args []string) {
+func chooseFrontend() FrontEnd {
 	for _, f := range frontendList {
 		if f.Available() {
 			fmt.Printf("DEBUG: Found frontend with priority %d\n", f.Priority())
-			os.Exit(f.Question())
-			return
+			return f
 		}
 	}
-	fmt.Println("DEBUG: frontend.Question(): No frontends are available")
-	os.Exit(1)
+	return nil
+}
+
+func Question(args []string) {
+	f := chooseFrontend()
+	if f == nil {
+		fmt.Println("DEBUG: frontend.Question(): No frontends are available")
+		os.Exit(1)
+	}
+	os.Exit(f.Question())
+}
+
+func Input(args []string) {
+	f := chooseFrontend()
+	if f == nil {
+		fmt.Println("DEBUG: frontend.Question(): No frontends are available")
+		os.Exit(1)
+	}
+	s := f.Input()
+	fmt.Println(s)
+	os.Exit(0)
 }
