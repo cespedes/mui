@@ -31,11 +31,28 @@ type Command struct {
 	Flag flag.FlagSet
 }
 
+var cmdCGI = Command{
+	Name:  "cgi",
+	Run:   runCGI,
+	Short: "execute script as a CGI client",
+	Long: `Usage: mui cgi [-shell interpreter] script [args]
+
+Execute a script with an interpreter (default /bin/sh),
+sending its output to a web browser as a CGI binary.
+`,
+}
+
+var cmdExec = Command{
+	Name:  "exec",
+	Run:   runExec,
+	Short: "execute a script - internal use only",
+}
+
 var cmdQuestion = Command{
 	Name:  "question",
 	Run:   frontend.Question,
 	Short: "display question dialog",
-	Long: `usage: mui question
+	Long: `Usage: mui question
 
 Display a question with two possible answers: Yes or No.
 
@@ -72,6 +89,8 @@ var cmdInfo = Command{
 */
 
 var commands = []Command{
+	cmdCGI,
+	cmdExec,
 	cmdQuestion,
 //	cmdCalendar,
 	cmdInput,
@@ -110,17 +129,23 @@ Use "mui help <command>" for more information about a command.`)
 	}
 }
 
+var (
+	flagDebug = flag.Bool("debug", false, "Show debugging information")
+)
+
 func main() {
-	args := os.Args[1:]
+	flag.Parse()
+
+	args := flag.Args()
 	if len(args) < 1 {
 		printUsage(os.Stderr, nil)
-		os.Exit(1)
+		os.Exit(2)
 	}
 	cmdname := args[0]
 
 	for _, c := range commands {
 		if cmdname == c.Name {
-			c.Run(args)
+			c.Run(args[1:])
 			return
 		}
 	}
@@ -140,7 +165,9 @@ func main() {
 		}
 		fmt.Fprintf(os.Stderr, "mui help %s: unknown help topic. Run \"go help\".\n",
 			strings.Join(args, " "))
+		os.Exit(2)
 	} else {
 		fmt.Fprintf(os.Stderr, "mui %s: unknown command\nRun 'mui help' for usage.\n", cmdname)
+		os.Exit(2)
 	}
 }
