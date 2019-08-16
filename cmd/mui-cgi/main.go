@@ -1,13 +1,14 @@
 package main
 
 import (
+	"flag"
+	"fmt"
 	"io"
+	"log"
 	"os"
 	"os/exec"
-	"fmt"
-	"log"
-	"flag"
 	"strings"
+	"syscall"
 )
 
 var (
@@ -21,7 +22,6 @@ var (
 
 //Execute a script with an interpreter (default /bin/sh),
 //sending its output to a web browser as a CGI binary.
-
 
 func printUsage(w io.Writer) {
 	fmt.Fprint(w, `mui-cgi executes a script as a CGI client.
@@ -64,11 +64,21 @@ func main() {
 	gateway := os.Getenv("GATEWAY_INTERFACE")
 	if !strings.HasPrefix(gateway, "CGI/") {
 		// this is not a CGI: let's execute the script:
-		cmd := exec.Command(*flagShell, args...)
+		path, err := exec.LookPath(*flagShell)
+		if err != nil {
+			log.Fatal(err)
+		}
+		cmd := exec.Command(path, args...)
 		cmd.Stdin = os.Stdin
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
-		cmd.Run()
+		err = cmd.Run()
+
+		if exiterr, ok := err.(*exec.ExitError); ok {
+			if status, ok := exiterr.Sys().(syscall.WaitStatus); ok {
+				os.Exit(status.ExitStatus())
+			}
+		}
 		os.Exit(0)
 	}
 }
