@@ -1,12 +1,12 @@
 package frontend
 
 import (
-	"os"
 	"fmt"
 	"golang.org/x/crypto/ssh/terminal"
+	"os"
 )
 
-type Dumb struct {}
+type Dumb struct{}
 
 func init() {
 	RegisterFrontEnd(Dumb{})
@@ -52,11 +52,11 @@ func (z Dumb) Question() int {
 		if err != nil {
 			return 2
 		}
-		if c=='y' || c=='Y' {
+		if c == 'y' || c == 'Y' {
 			return 0
-		} else if c=='n' || c=='N' {
+		} else if c == 'n' || c == 'N' {
 			return 1
-		} else if c==3 { // ctrl-C
+		} else if c == 3 { // ctrl-C
 			return 2
 		}
 	}

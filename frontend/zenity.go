@@ -1,13 +1,13 @@
 package frontend
 
 import (
-	"os"
 	"fmt"
-	"syscall"
+	"os"
 	"os/exec"
+	"syscall"
 )
 
-type Zenity struct {}
+type Zenity struct{}
 
 func init() {
 	RegisterFrontEnd(Zenity{})

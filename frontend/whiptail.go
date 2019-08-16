@@ -1,13 +1,13 @@
 package frontend
 
 import (
-	"os"
 	"fmt"
+	"os"
 	"os/exec"
 	"syscall"
 )
 
-type Whiptail struct {}
+type Whiptail struct{}
 
 func init() {
 	RegisterFrontEnd(Whiptail{})
@@ -25,10 +25,10 @@ func (z Whiptail) Available() bool {
 	if os.Getenv("TERM") == "" {
 		return false
 	}
-        if _, err := exec.LookPath("whiptail"); err != nil {
-                return false
-        }
-        fmt.Println("Whiptail is available")
+	if _, err := exec.LookPath("whiptail"); err != nil {
+		return false
+	}
+	fmt.Println("Whiptail is available")
 	return true
 }
 

@@ -2,10 +2,10 @@
 package main
 
 import (
+	"flag"
+	"fmt"
 	"io"
 	"os"
-	"fmt"
-	"flag"
 	"strings"
 
 	"github.com/cespedes/mui/frontend"
@@ -74,7 +74,7 @@ var cmdInfo = Command{
 
 var commands = []Command{
 	cmdQuestion,
-//	cmdCalendar,
+	cmdCalendar,
 	cmdInput,
 }
 
@@ -93,15 +93,6 @@ The commands are:
 		for _, c := range commands {
 			fmt.Fprintf(w, "\t%-10s %s\n", c.Name, c.Short)
 		}
-/*
-        input    display text input dialog
-        error    display error dialog
-        info     display info dialog
-        scale    display scale dialog
-        progress display progress indication dialog
-        password display password dialog
-        list     display list dialog
-*/
 
 		fmt.Fprintln(w, `
 Use "mui help <command>" for more information about a command.`)

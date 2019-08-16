@@ -60,14 +60,20 @@ func main() {
 		log.Fatal(err)
 	}
 
+	path, err := exec.LookPath(*flagShell)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if *flagExec {
+		runExec(path, args)
+		return
+	}
+
 	// calling as a CGI?
 	gateway := os.Getenv("GATEWAY_INTERFACE")
 	if !strings.HasPrefix(gateway, "CGI/") {
 		// this is not a CGI: let's execute the script:
-		path, err := exec.LookPath(*flagShell)
-		if err != nil {
-			log.Fatal(err)
-		}
 		cmd := exec.Command(path, args...)
 		cmd.Stdin = os.Stdin
 		cmd.Stdout = os.Stdout

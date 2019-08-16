@@ -1,23 +1,16 @@
 package main
 
 import (
-	"fmt"
-	"sync"
 	"bytes"
+	"fmt"
 	"log"
-	"time"
+	"net"
 	"os"
 	"os/exec"
-	"net"
-	"flag"
-//	"syscall"
+	"sync"
+	"time"
+	//	"syscall"
 )
-
-func execUsage() {
-	fmt.Fprintln(os.Stderr, `Usage: mui exec [-shell interpreter] script [args]
-
-Use "mui help exec" for more information`)
-}
 
 func net_listen() {
 	ln, err := net.Listen("tcp", "127.0.0.1:")
@@ -47,18 +40,19 @@ func net_listen() {
 }
 
 type Buffer struct {
-    b bytes.Buffer
-    m sync.Mutex
+	b bytes.Buffer
+	m sync.Mutex
 }
+
 func (b *Buffer) Read(p []byte) (n int, err error) {
-    b.m.Lock()
-    defer b.m.Unlock()
-    return b.b.Read(p)
+	b.m.Lock()
+	defer b.m.Unlock()
+	return b.b.Read(p)
 }
 func (b *Buffer) Write(p []byte) (n int, err error) {
-    b.m.Lock()
-    defer b.m.Unlock()
-    return b.b.Write(p)
+	b.m.Lock()
+	defer b.m.Unlock()
+	return b.b.Write(p)
 }
 
 var buf_stdout Buffer
@@ -66,16 +60,16 @@ var buf_stdout Buffer
 func executeScript(shell string, args []string) {
 	var err error
 	cmd := exec.Command(shell, args...)
-//	cmd.SysProcAttr = &syscall.SysProcAttr{Setsid: true}
+	//	cmd.SysProcAttr = &syscall.SysProcAttr{Setsid: true}
 	pipe_stdout, err := cmd.StdoutPipe()
 	if err != nil {
 		log.Fatal(err)
 	}
-/*
-	cmd.Stdout = &buf_stdout
-*/
-//	r, w, err := os.Pipe()
-//	cmd.Stdout = w
+	/*
+		cmd.Stdout = &buf_stdout
+	*/
+	//	r, w, err := os.Pipe()
+	//	cmd.Stdout = w
 	fmt.Printf("Executing: %+v\n", cmd)
 	if err = cmd.Start(); err != nil {
 		log.Fatal(err)
@@ -92,53 +86,38 @@ func executeScript(shell string, args []string) {
 			break
 		}
 	}
-/*
-	for {
-		out := make([]byte, 1024)
-		n, err := stdout.Read(out)
-		if err != nil {
-			break
+	/*
+		for {
+			out := make([]byte, 1024)
+			n, err := stdout.Read(out)
+			if err != nil {
+				break
+			}
+			fmt.Printf("%s", out[:n])
 		}
-		fmt.Printf("%s", out[:n])
-	}
-*/
-/*
-	if err = cmd.Wait(); err != nil {
-		log.Fatal(err)
-	}
-*/
+	*/
+	/*
+		if err = cmd.Wait(); err != nil {
+			log.Fatal(err)
+		}
+	*/
 
-/*
-	ch := make(chan error)
-	go func() {
-		ch <- cmd.Run()
-	}()
-	select {
-		case err := <- ch:
-			fmt.Printf("Error: %v\n", err)
-	}
-	close(ch)
-*/
+	/*
+		ch := make(chan error)
+		go func() {
+			ch <- cmd.Run()
+		}()
+		select {
+			case err := <- ch:
+				fmt.Printf("Error: %v\n", err)
+		}
+		close(ch)
+	*/
 }
 
-func runExec(args []string) {
-	f := flag.NewFlagSet("mui exec", flag.ContinueOnError)
-	f.Usage = execUsage
-	pshell := f.String("shell", "/bin/sh", "Interpreter to use")
-	f.Parse(args)
-	args = f.Args()
-	fmt.Printf("shell = %v\n", *pshell)
-	if len(args) < 1 {
-		execUsage()
-		os.Exit(1)
-	}
-	path, err := exec.LookPath(args[0])
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Printf("path = %s\n", path)
+func runExec(path string, args []string) {
 	net_listen()
-	executeScript(*pshell, args)
+	executeScript(path, args)
 	for {
 		log.Printf("tick\n")
 		time.Sleep(1 * time.Second)
