@@ -7,7 +7,7 @@ import (
 	"flag"
 	"strings"
 
-	"./frontend"
+	"github.com/cespedes/mui/frontend"
 )
 
 type Command struct {
