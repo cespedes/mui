@@ -26,7 +26,7 @@ func net_listen() {
 	}
 	fmt.Printf("Listening on port %d\n", tcpaddr.Port)
 	go func() {
-		buf := make([]byte, 128)
+		buf := make([]byte, 1024)
 		for {
 			conn, _ := ln.Accept()
 			n, _ := buf_stdout.Read(buf)
@@ -55,16 +55,29 @@ func (b *Buffer) Write(p []byte) (n int, err error) {
 	return b.b.Write(p)
 }
 
-var buf_stdout Buffer
+var buf_stdout, buf_stderr Buffer
 
 func executeScript(shell string, args []string) {
 	var err error
 	cmd := exec.Command(shell, args...)
 	//	cmd.SysProcAttr = &syscall.SysProcAttr{Setsid: true}
 	cmd.Stdout = &buf_stdout
+	cmd.Stderr = &buf_stderr
+	r1, w1, err := os.Pipe()
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println("os.Pipe() = ", r1.Fd(), w1.Fd())
+	r2, w2, err := os.Pipe()
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println("os.Pipe() = ", r2.Fd(), w2.Fd())
+	cmd.ExtraFiles = []*os.File{w1, r2}
+
 	fmt.Printf("Executing: %+v\n", cmd)
 	if err = cmd.Run(); err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 	fmt.Println("Finished.")
 	/*
