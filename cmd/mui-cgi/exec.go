@@ -10,6 +10,7 @@ import (
 	"sync"
 	"time"
 	//	"syscall"
+	"encoding/json"
 )
 
 func net_listen() {
@@ -26,14 +27,23 @@ func net_listen() {
 	}
 	fmt.Printf("Listening on port %d\n", tcpaddr.Port)
 	go func() {
-		buf := make([]byte, 1024)
+		var output struct {
+			Stdout []byte
+			Stderr []byte
+		}
+		output.Stdout = make([]byte, 1024)
+		output.Stderr = make([]byte, 1024)
 		for {
 			conn, _ := ln.Accept()
-			n, _ := buf_stdout.Read(buf)
-			if n > 0 {
-				log.Printf("sending %d bytes\n", n)
-				conn.Write(buf[:n])
-			}
+			output.Stdout = output.Stdout[:cap(output.Stdout)]
+			output.Stderr = output.Stderr[:cap(output.Stderr)]
+			n1, _ := buf_stdout.Read(output.Stdout)
+			n2, _ := buf_stdout.Read(output.Stderr)
+			output.Stdout = output.Stdout[:n1]
+			output.Stderr = output.Stderr[:n2]
+			json, _ := json.MarshalIndent(output, "", "\t")
+			log.Printf("sending %d bytes of stdout, %d of stderr\n", n1, n2)
+			conn.Write(json)
 			conn.Close()
 		}
 	}()
@@ -73,7 +83,7 @@ func executeScript(shell string, args []string) {
 		panic(err)
 	}
 	fmt.Println("os.Pipe() = ", r2.Fd(), w2.Fd())
-	cmd.ExtraFiles = []*os.File{w1, r2}
+	cmd.ExtraFiles = []*os.File{nil, nil, w1, r2}
 
 	fmt.Printf("Executing: %+v\n", cmd)
 	if err = cmd.Run(); err != nil {
