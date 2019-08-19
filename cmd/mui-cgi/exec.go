@@ -3,47 +3,13 @@ package main
 import (
 	"bytes"
 	"fmt"
-	"log"
-	"net"
 	"os"
 	"os/exec"
 	"sync"
-	"time"
-	//	"syscall"
-	"net/http"
-	"encoding/json"
+//	"time"
+//	"syscall"
+//	"math/rand"
 )
-
-func net_listen() {
-	ln, err := net.Listen("tcp", "127.0.0.1:")
-	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		os.Exit(1)
-	}
-	addr := ln.Addr()
-	tcpaddr, err := net.ResolveTCPAddr(addr.Network(), addr.String())
-	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		os.Exit(1)
-	}
-	fmt.Printf("Listening on port %d\n", tcpaddr.Port)
-	http.HandleFunc("/", func(w http.ResponseWriter, _ *http.Request) {
-		var output struct {
-			Stdout []byte
-			Stderr []byte
-		}
-		output.Stdout = make([]byte, 1024)
-		output.Stderr = make([]byte, 1024)
-		n1, _ := buf_stdout.Read(output.Stdout)
-		n2, _ := buf_stdout.Read(output.Stderr)
-		output.Stdout = output.Stdout[:n1]
-		output.Stderr = output.Stderr[:n2]
-		json, _ := json.MarshalIndent(output, "", "\t")
-		log.Printf("sending %d bytes of stdout, %d of stderr\n", n1, n2)
-		w.Write(json)
-	})
-	go http.Serve(ln, nil)
-}
 
 type Buffer struct {
 	b bytes.Buffer
@@ -63,7 +29,7 @@ func (b *Buffer) Write(p []byte) (n int, err error) {
 
 var buf_stdout, buf_stderr Buffer
 
-func executeScript(shell string, args []string) {
+func executeScript(shell string, args []string, notes chan string) {
 	var err error
 	cmd := exec.Command(shell, args...)
 	//	cmd.SysProcAttr = &syscall.SysProcAttr{Setsid: true}
@@ -79,13 +45,15 @@ func executeScript(shell string, args []string) {
 		panic(err)
 	}
 	fmt.Println("os.Pipe() = ", r2.Fd(), w2.Fd())
-	cmd.ExtraFiles = []*os.File{nil, nil, w1, r2}
+	cmd.ExtraFiles = make([]*os.File, 15)
+	cmd.ExtraFiles[13] = w1
+	cmd.ExtraFiles[14] = r2
 
-	fmt.Printf("Executing: %+v\n", cmd)
+	notes <- fmt.Sprintf("exec: starting command: %v", cmd)
 	if err = cmd.Run(); err != nil {
 		panic(err)
 	}
-	fmt.Println("Finished.")
+	notes <- "exec: command finished."
 	/*
 		ch := make(chan error)
 		go func() {
@@ -97,13 +65,4 @@ func executeScript(shell string, args []string) {
 		}
 		close(ch)
 	*/
-}
-
-func runExec(path string, args []string) {
-	net_listen()
-	executeScript(path, args)
-	for {
-		log.Printf("tick\n")
-		time.Sleep(1 * time.Second)
-	}
 }

@@ -53,7 +53,6 @@ func main() {
 		printUsage(os.Stderr)
 		os.Exit(2)
 	}
-	fmt.Print("cgi: debug=", *flagDebug, "; exec=", *flagExec, "; shell=", *flagShell, "\n")
 
 	_, err := exec.LookPath(args[0])
 	if err != nil {
@@ -66,25 +65,33 @@ func main() {
 	}
 
 	if *flagExec {
-		runExec(path, args)
+		notes := make(chan string)
+		go net_listen(notes)
+		go executeScript(path, args, notes)
+		for {
+			s := <- notes
+			log.Printf("note: %s\n", s)
+		}
 		return
 	}
 
 	// calling as a CGI?
-	gateway := os.Getenv("GATEWAY_INTERFACE")
-	if !strings.HasPrefix(gateway, "CGI/") {
-		// this is not a CGI: let's execute the script:
-		cmd := exec.Command(path, args...)
-		cmd.Stdin = os.Stdin
-		cmd.Stdout = os.Stdout
-		cmd.Stderr = os.Stderr
-		err = cmd.Run()
-
-		if exiterr, ok := err.(*exec.ExitError); ok {
-			if status, ok := exiterr.Sys().(syscall.WaitStatus); ok {
-				os.Exit(status.ExitStatus())
-			}
-		}
+	if gi := os.Getenv("GATEWAY_INTERFACE"); strings.HasPrefix(gi, "CGI/") {
+		cgi_handle(path, args)
 		os.Exit(0)
 	}
+
+	// this is not a CGI: let's execute the script:
+	cmd := exec.Command(path, args...)
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	err = cmd.Run()
+
+	if exiterr, ok := err.(*exec.ExitError); ok {
+		if status, ok := exiterr.Sys().(syscall.WaitStatus); ok {
+			os.Exit(status.ExitStatus())
+		}
+	}
+	os.Exit(0)
 }
