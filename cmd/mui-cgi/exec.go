@@ -10,6 +10,7 @@ import (
 	"sync"
 	"time"
 	//	"syscall"
+	"net/http"
 	"encoding/json"
 )
 
@@ -26,27 +27,22 @@ func net_listen() {
 		os.Exit(1)
 	}
 	fmt.Printf("Listening on port %d\n", tcpaddr.Port)
-	go func() {
+	http.HandleFunc("/", func(w http.ResponseWriter, _ *http.Request) {
 		var output struct {
 			Stdout []byte
 			Stderr []byte
 		}
 		output.Stdout = make([]byte, 1024)
 		output.Stderr = make([]byte, 1024)
-		for {
-			conn, _ := ln.Accept()
-			output.Stdout = output.Stdout[:cap(output.Stdout)]
-			output.Stderr = output.Stderr[:cap(output.Stderr)]
-			n1, _ := buf_stdout.Read(output.Stdout)
-			n2, _ := buf_stdout.Read(output.Stderr)
-			output.Stdout = output.Stdout[:n1]
-			output.Stderr = output.Stderr[:n2]
-			json, _ := json.MarshalIndent(output, "", "\t")
-			log.Printf("sending %d bytes of stdout, %d of stderr\n", n1, n2)
-			conn.Write(json)
-			conn.Close()
-		}
-	}()
+		n1, _ := buf_stdout.Read(output.Stdout)
+		n2, _ := buf_stdout.Read(output.Stderr)
+		output.Stdout = output.Stdout[:n1]
+		output.Stderr = output.Stderr[:n2]
+		json, _ := json.MarshalIndent(output, "", "\t")
+		log.Printf("sending %d bytes of stdout, %d of stderr\n", n1, n2)
+		w.Write(json)
+	})
+	go http.Serve(ln, nil)
 }
 
 type Buffer struct {
