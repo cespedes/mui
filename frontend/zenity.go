@@ -7,33 +7,33 @@ import (
 	"syscall"
 )
 
-type Zenity struct{}
+type zenity struct{}
 
 func init() {
-	RegisterFrontEnd(Zenity{})
+	RegisterFrontEnd(zenity{})
 }
 
-func (z Zenity) Name() string {
+func (z zenity) Name() string {
 	return "zenity"
 }
 
-func (z Zenity) Priority() int {
+func (z zenity) Priority() int {
 	return 100
 }
 
-func (z Zenity) Available() bool {
+func (z zenity) Available() bool {
 	if os.Getenv("DISPLAY") == "" {
 		return false
 	}
 	if _, err := exec.LookPath("zenity"); err != nil {
 		return false
 	}
-	fmt.Println("Zenity is available")
+	fmt.Println("zenity is available")
 	return true
 }
 
-func (z Zenity) Question() int {
-	fmt.Println("Zenity Question")
+func (z zenity) Question() int {
+	fmt.Println("zenity Question")
 	cmd := exec.Command("zenity", "--question")
 	err := cmd.Run()
 	if exiterr, ok := err.(*exec.ExitError); ok {
@@ -44,6 +44,6 @@ func (z Zenity) Question() int {
 	return 0
 }
 
-func (z Zenity) Input() string {
+func (z zenity) Input() string {
 	return "text from zenity"
 }

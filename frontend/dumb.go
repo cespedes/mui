@@ -6,21 +6,21 @@ import (
 	"os"
 )
 
-type Dumb struct{}
+type dumb struct{}
 
 func init() {
-	RegisterFrontEnd(Dumb{})
+	RegisterFrontEnd(dumb{})
 }
 
-func (z Dumb) Name() string {
+func (z dumb) Name() string {
 	return "dumb"
 }
 
-func (z Dumb) Priority() int {
+func (z dumb) Priority() int {
 	return 10
 }
 
-func (z Dumb) Available() bool {
+func (z dumb) Available() bool {
 	return true
 }
 
@@ -44,7 +44,7 @@ func read_letter_with_echo() (c byte, err error) {
 	return c, nil
 }
 
-func (z Dumb) Question() int {
+func (z dumb) Question() int {
 	for {
 		fmt.Print("Are you sure you wany yo proceed? [yn] ")
 		c, err := read_letter_with_echo()
@@ -62,6 +62,6 @@ func (z Dumb) Question() int {
 	}
 }
 
-func (z Dumb) Input() string {
+func (z dumb) Input() string {
 	return "text"
 }

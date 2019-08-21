@@ -7,32 +7,32 @@ import (
 	"syscall"
 )
 
-type Whiptail struct{}
+type whiptail struct{}
 
 func init() {
-	RegisterFrontEnd(Whiptail{})
+	RegisterFrontEnd(whiptail{})
 }
 
-func (z Whiptail) Name() string {
+func (z whiptail) Name() string {
 	return "whiptail"
 }
 
-func (z Whiptail) Priority() int {
+func (z whiptail) Priority() int {
 	return 50
 }
 
-func (z Whiptail) Available() bool {
+func (z whiptail) Available() bool {
 	if os.Getenv("TERM") == "" {
 		return false
 	}
 	if _, err := exec.LookPath("whiptail"); err != nil {
 		return false
 	}
-	fmt.Println("Whiptail is available")
+	fmt.Println("whiptail is available")
 	return true
 }
 
-func (z Whiptail) Question() int {
+func (z whiptail) Question() int {
 	cmd := exec.Command("whiptail", "--yesno", "Are you sure you wany yo proceed?", "7", "40")
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
@@ -45,6 +45,6 @@ func (z Whiptail) Question() int {
 	return 0
 }
 
-func (z Whiptail) Input() string {
+func (z whiptail) Input() string {
 	return "text from whiptail"
 }
