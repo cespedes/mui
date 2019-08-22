@@ -46,8 +46,8 @@ func executeScript(shell string, args []string, notes chan string) {
 	}
 	fmt.Println("os.Pipe() = ", r2.Fd(), w2.Fd())
 	cmd.ExtraFiles = make([]*os.File, 15)
-	cmd.ExtraFiles[13] = w1
-	cmd.ExtraFiles[14] = r2
+	cmd.ExtraFiles[13] = r1
+	cmd.ExtraFiles[14] = w2
 
 	notes <- fmt.Sprintf("exec: starting command: %v", cmd)
 	if err = cmd.Run(); err != nil {

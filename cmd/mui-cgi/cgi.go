@@ -1,15 +1,15 @@
 package main
 
 import (
-	"os"
 	"fmt"
-	"syscall"
-	"os/exec"
 	"net/http/cgi"
+	"os"
+	"os/exec"
+	"syscall"
 )
 
 func cgi_handle(path string, args []string) {
-	r,err := cgi.Request()
+	r, err := cgi.Request()
 	if err != nil {
 		fmt.Printf("Error: %s\n", err)
 		return

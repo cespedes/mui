@@ -69,7 +69,7 @@ func main() {
 		go net_listen(notes)
 		go executeScript(path, args, notes)
 		for {
-			s := <- notes
+			s := <-notes
 			log.Printf("note: %s\n", s)
 		}
 		return

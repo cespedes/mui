@@ -8,7 +8,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/cespedes/mui/frontend"
+	"github.com/cespedes/mui"
 )
 
 type Command struct {
@@ -17,10 +17,6 @@ type Command struct {
 	// Run runs the command.
 	// The args are the arguments after the command name.
 	Run func(args []string)
-
-	// UsageLine is the one-line usage message.
-	// The first word in the line is taken to be the command name.
-	UsageLine string
 
 	// Short is the short description shown in the 'mui help' output.
 	Short string
@@ -34,7 +30,7 @@ type Command struct {
 
 var cmdQuestion = Command{
 	Name:  "question",
-	Run:   frontend.Question,
+	Run:   mui.Question,
 	Short: "display question dialog",
 	Long: `Usage: mui question
 
@@ -51,7 +47,7 @@ var cmdCalendar = Command{
 
 var cmdInput = Command{
 	Name:  "input",
-	Run:   frontend.Input,
+	Run:   mui.Input,
 	Short: "display text input dialog",
 }
 
