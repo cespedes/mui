@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/exec"
 	"syscall"
+//	"encondig/json"
 )
 
 func cgi_handle(path string, args []string) {
@@ -20,16 +21,23 @@ func cgi_handle(path string, args []string) {
 		fmt.Println("Content-Type: text/plain")
 		fmt.Println()
 		fmt.Println("TODO: exec script in background")
-		cmd := exec.Command(path, args...)
-		cmd.Stdin = os.Stdin
-		cmd.Stdout = os.Stdout
-		cmd.Stderr = os.Stderr
-		err = cmd.Run()
-		if exiterr, ok := err.(*exec.ExitError); ok {
-			if status, ok := exiterr.Sys().(syscall.WaitStatus); ok {
-				os.Exit(status.ExitStatus())
-			}
+		newargs := []string{"-exec", "-shell", path}
+		newargs = append(newargs, args...)
+		cmd := exec.Command("mui-cgi", newargs...)
+		cmd.SysProcAttr = &syscall.SysProcAttr{Setsid: true}
+		stdout, err := cmd.StdoutPipe()
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
 		}
+		err = cmd.Start()
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		var s string
+		fmt.Fscanln(stdout, &s)
+		fmt.Printf("id is [%s]\n", s)
 		os.Exit(0)
 	}
 	fmt.Println("Content-Type: application/json")

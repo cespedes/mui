@@ -35,16 +35,15 @@ func executeScript(shell string, args []string, notes chan string) {
 	//	cmd.SysProcAttr = &syscall.SysProcAttr{Setsid: true}
 	cmd.Stdout = &buf_stdout
 	cmd.Stderr = &buf_stderr
-	r1, w1, err := os.Pipe()
+	r1, _, err := os.Pipe()
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println("os.Pipe() = ", r1.Fd(), w1.Fd())
-	r2, w2, err := os.Pipe()
+	_, w2, err := os.Pipe()
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println("os.Pipe() = ", r2.Fd(), w2.Fd())
+	// TODO: handle pipes from the server side
 	cmd.ExtraFiles = make([]*os.File, 15)
 	cmd.ExtraFiles[13] = r1
 	cmd.ExtraFiles[14] = w2

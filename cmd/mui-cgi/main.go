@@ -5,10 +5,13 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"math/rand"
+	"net"
 	"os"
 	"os/exec"
 	"strings"
 	"syscall"
+	"time"
 )
 
 var (
@@ -65,8 +68,22 @@ func main() {
 	}
 
 	if *flagExec {
+		// Create TCP listener:
+		ln, err := net.Listen("tcp", "127.0.0.1:")
+		if err != nil {
+			log.Fatal(err)
+		}
+		addr := ln.Addr()
+		tcpaddr, err := net.ResolveTCPAddr(addr.Network(), addr.String())
+		if err != nil {
+			log.Fatal(err)
+		}
+		rand.Seed(time.Now().UTC().UnixNano())
+		id := rand.Int()
+		fmt.Printf("%d-%d\n", tcpaddr.Port, id)
+
 		notes := make(chan string)
-		go net_listen(notes)
+		go http_serve(ln, notes)
 		go executeScript(path, args, notes)
 		for {
 			s := <-notes

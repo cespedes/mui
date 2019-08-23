@@ -9,17 +9,7 @@ import (
 	"encoding/json"
 )
 
-func net_listen(notes chan string) {
-	ln, err := net.Listen("tcp", "127.0.0.1:")
-	if err != nil {
-		log.Fatal(err)
-	}
-	addr := ln.Addr()
-	tcpaddr, err := net.ResolveTCPAddr(addr.Network(), addr.String())
-	if err != nil {
-		log.Fatal(err)
-	}
-	notes <- fmt.Sprintf("net: listening on port %d", tcpaddr.Port)
+func http_serve(ln net.Listener, notes chan string) {
 	http.HandleFunc("/", func(w http.ResponseWriter, _ *http.Request) {
 		var output struct {
 			Stdout []byte
@@ -35,6 +25,6 @@ func net_listen(notes chan string) {
 		notes <- fmt.Sprintf("net: sending %d bytes of stdout, %d of stderr", n1, n2)
 		w.Write(json)
 	})
-	err = http.Serve(ln, nil)
+	err := http.Serve(ln, nil)
 	log.Fatal(err)
 }
