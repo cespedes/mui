@@ -4,13 +4,18 @@ import (
 	"fmt"
 	"log"
 	"net"
-//	"math/rand"
+	"strconv"
 	"net/http"
 	"encoding/json"
 )
 
-func http_serve(ln net.Listener, notes chan string) {
-	http.HandleFunc("/", func(w http.ResponseWriter, _ *http.Request) {
+func http_serve(ln net.Listener, id int, notes chan string) {
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		i, _ := strconv.Atoi(r.FormValue("id"))
+		if id != i {
+			http.Error(w, "403 Forbidden", http.StatusForbidden)
+			return
+		}
 		var output struct {
 			Stdout []byte
 			Stderr []byte

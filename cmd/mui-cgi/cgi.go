@@ -20,7 +20,6 @@ func cgi_handle(path string, args []string) {
 	if id == "" { // first time: let's execute the script
 		fmt.Println("Content-Type: text/plain")
 		fmt.Println()
-		fmt.Println("TODO: exec script in background")
 		newargs := []string{"-exec", "-shell", path}
 		newargs = append(newargs, args...)
 		cmd := exec.Command("mui-cgi", newargs...)
@@ -37,7 +36,9 @@ func cgi_handle(path string, args []string) {
 		}
 		var s string
 		fmt.Fscanln(stdout, &s)
-		fmt.Printf("id is [%s]\n", s)
+		fmt.Printf("script is %q\n", args[0])
+		fmt.Printf("id is (%s)\n", s)
+		fmt.Println("TODO: output HTML template")
 		os.Exit(0)
 	}
 	fmt.Println("Content-Type: application/json")

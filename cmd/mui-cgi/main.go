@@ -83,7 +83,7 @@ func main() {
 		fmt.Printf("%d-%d\n", tcpaddr.Port, id)
 
 		notes := make(chan string)
-		go http_serve(ln, notes)
+		go http_serve(ln, id, notes)
 		go executeScript(path, args, notes)
 		for {
 			s := <-notes
