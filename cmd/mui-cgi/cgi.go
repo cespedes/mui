@@ -1,7 +1,9 @@
 package main
 
 import (
+	"io"
 	"fmt"
+	"net/http"
 	"net/http/cgi"
 	"os"
 	"os/exec"
@@ -16,8 +18,9 @@ func cgi_handle(path string, args []string) {
 		return
 	}
 	// id is of form <port>-<cookie>
+	port := r.FormValue("port")
 	id := r.FormValue("id")
-	if id == "" { // first time: let's execute the script
+	if port == "" || id == "" { // first time: let's execute the script
 		fmt.Println("Content-Type: text/plain")
 		fmt.Println()
 		newargs := []string{"-exec", "-shell", path}
@@ -37,13 +40,16 @@ func cgi_handle(path string, args []string) {
 		var s string
 		fmt.Fscanln(stdout, &s)
 		fmt.Printf("script is %q\n", args[0])
-		fmt.Printf("id is (%s)\n", s)
+		fmt.Printf("port-id is (%s)\n", s)
 		fmt.Println("TODO: output HTML template")
 		os.Exit(0)
 	}
-	fmt.Println("Content-Type: application/json")
-	fmt.Println()
-	fmt.Printf("id = %#v\n", r.FormValue("id"))
-	fmt.Println("TODO: connect to backgrounded script")
-	// and now, let's execute the script:
+	res, err := http.Get(fmt.Sprintf("http://localhost:%s?id=%s", port, id))
+	if err != nil {
+		// TODO: handle better...
+		fmt.Printf("Error: %s\n", err)
+	}
+	res.Header.Write(os.Stdout)
+	fmt.Print("\r\n")
+	io.Copy(os.Stdout, res.Body)
 }
