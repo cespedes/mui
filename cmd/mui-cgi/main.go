@@ -82,9 +82,19 @@ func main() {
 		id := rand.Int()
 		fmt.Printf("%d-%d\n", tcpaddr.Port, id)
 
+		// 2 pipe to communicate with script:
+		r1, w1, err := os.Pipe()
+		if err != nil {
+			panic(err)
+		}
+		r2, w2, err := os.Pipe()
+		if err != nil {
+			panic(err)
+		}
+
 		notes := make(chan string)
-		go http_serve(ln, id, notes)
-		go executeScript(path, args, notes)
+		go http_serve(ln, id, notes, r1, w2)
+		go executeScript(path, args, notes, r2, w1)
 		for {
 			s := <-notes
 			log.Printf("note: %s\n", s)

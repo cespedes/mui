@@ -44,10 +44,13 @@ func cgi_handle(path string, args []string) {
 		fmt.Println("TODO: output HTML template")
 		os.Exit(0)
 	}
+	// TODO: handle mui requests and responses
 	res, err := http.Get(fmt.Sprintf("http://localhost:%s?id=%s", port, id))
 	if err != nil {
-		// TODO: handle better...
+		fmt.Println("Status: 412 Precondition Failed")
+		fmt.Println()
 		fmt.Printf("Error: %s\n", err)
+		return
 	}
 	res.Header.Write(os.Stdout)
 	fmt.Print("\r\n")
