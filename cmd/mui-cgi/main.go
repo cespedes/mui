@@ -79,8 +79,11 @@ func main() {
 			log.Fatal(err)
 		}
 		rand.Seed(time.Now().UTC().UnixNano())
-		id := rand.Int()
-		fmt.Printf("%d-%d\n", tcpaddr.Port, id)
+		var id int
+		for id == 0 {
+			id = rand.Int()
+		}
+		fmt.Printf("%d %d\n", tcpaddr.Port, id)
 
 		// 2 pipe to communicate with script:
 		r1, w1, err := os.Pipe()
