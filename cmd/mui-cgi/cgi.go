@@ -49,7 +49,7 @@ func cgi_handle(path string, args []string) {
 	if err != nil {
 		fmt.Println("Status: 412 Precondition Failed")
 		fmt.Println()
-		fmt.Printf("Error: %s\n", err)
+		fmt.Printf("Error: could not connect to local port %s\n", port)
 		return
 	}
 	res.Header.Write(os.Stdout)
