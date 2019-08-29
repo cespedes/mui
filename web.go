@@ -1,10 +1,10 @@
 package mui
 
 import (
+	"bufio"
 	"fmt"
 	"os"
 	"strconv"
-	"encoding/json"
 )
 
 const (
@@ -12,17 +12,27 @@ const (
 	fd_out = 0x11
 )
 
-type web struct{}
-
-func init() {
-	RegisterFrontEnd(web{})
+type web struct{
+	in *os.File
+	out *os.File
+	buf_in *bufio.Reader
 }
 
-func (z web) Name() string {
+func init() {
+	w := new(web)
+	if os.Getenv("MUI_WEB") != "" {
+		w.in = os.NewFile(fd_in, "pipe-in")
+		w.out = os.NewFile(fd_out, "pipe-out")
+		w.buf_in = bufio.NewReader(w.in)
+	}
+	RegisterFrontEnd(w)
+}
+
+func (w web) Name() string {
 	return "web"
 }
 
-func (z web) Priority() int {
+func (w web) Priority() int {
 	return 200
 }
 
@@ -30,43 +40,46 @@ var result struct {
 	ok bool
 }
 
-func (z web) Available() bool {
+func (w web) send(name, value string) error {
+	fmt.Fprintf(os.Stderr, "DEBUG: sending (%s,%s) to pipe\n", name, value)
+	_, err := fmt.Fprintf(w.out, "%s\000%s\000", name, value)
+	return err
+}
+
+func (w web) recv() (value string, err error) {
+	value, err = w.buf_in.ReadString('\000')
+	fmt.Fprintf(os.Stderr, "DEBUG: mui.web.recv() = (%s,%v)\n", value, err)
+	return
+}
+
+func (w web) Available() bool {
 	if os.Getenv("MUI_WEB") == "" {
 		return false
 	}
-	in := os.NewFile(fd_in, "pipe-in")
-	out := os.NewFile(fd_out, "pipe-out")
-	_, err := fmt.Fprint(out, "{}")
+	err := w.send("", "")
 	if err != nil {
 		return false
 	}
-	buf := make([]byte, 1024)
-	n, err := in.Read(buf)
+	_, err = w.recv()
 	if err != nil {
 		return false
 	}
-	err = json.Unmarshal(buf[:n], &result)
 	return true
 }
 
-func (z web) Question() int {
-	in := os.NewFile(fd_in, "pipe-in")
-	out := os.NewFile(fd_out, "pipe-out")
-	_, err := fmt.Fprint(out, "question")
-	buf := make([]byte, 1024)
-	n, _ := in.Read(buf)
-	i, err := strconv.Atoi(string(buf[:n]))
+func (w web) Question() int {
+	w.send("type", "question")
+	resp, err := w.recv()
+	if err != nil {
+		return 2
+	}
+	i, err := strconv.Atoi(resp)
 	if err != nil {
 		return 2
 	}
 	return i
 }
 
-func (z web) Input() string {
-	in := os.NewFile(0x10, "pipe-in")
-	out := os.NewFile(0x11, "pipe-out")
-	fmt.Fprint(out, "input")
-	buf := make([]byte, 1024)
-	n, _ := in.Read(buf)
-	return string(buf[:n])
+func (w web) Input() string {
+	return ""
 }

@@ -31,6 +31,7 @@ func executeScript(shell string, args []string, notes chan string, pipe_read, pi
 	cmd := exec.Command(shell, args...)
 	cmd.Stdout = &buf_stdout
 	cmd.Stderr = &buf_stderr
+	cmd.Env = append(os.Environ(), "MUI_WEB=1")
 
 	cmd.ExtraFiles = make([]*os.File, 15)
 	cmd.ExtraFiles[13] = pipe_read

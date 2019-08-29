@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"log"
 	"math/rand"
 	"net"
@@ -18,6 +19,7 @@ var (
 	flagDebug = flag.Bool("debug", false, "Show debugging information")
 	flagExec  = flag.Bool("exec", false, "Internal use only")
 	flagShell = flag.String("shell", "/bin/sh", "Interpreter to use")
+	debug = log.New(ioutil.Discard, "", log.Ldate | log.Ltime)
 )
 
 //        Short: "execute script as a CGI client",
@@ -51,6 +53,16 @@ func init() {
 func main() {
 	flag.Parse()
 
+	if *flagDebug {
+		w, e := os.OpenFile("/tmp/debug", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+		if e == nil {
+			debug.SetOutput(w)
+		} else {
+			debug.SetOutput(os.Stderr)
+		}
+	}
+	log.Printf("debug = %#v\n", debug)
+
 	args := flag.Args()
 	if len(args) < 1 {
 		printUsage(os.Stderr)
@@ -68,6 +80,7 @@ func main() {
 	}
 
 	if *flagExec {
+		debug.Print("Executing mui-cgi -exec")
 		// Create TCP listener:
 		ln, err := net.Listen("tcp", "127.0.0.1:")
 		if err != nil {

@@ -67,7 +67,11 @@ func cgi_handle(path string, args []string) {
 	if port == "" || id == "" { // first time: let's execute the script
 		fmt.Println("Content-Type: text/html")
 		fmt.Println()
-		newargs := []string{"-exec", "-shell", path}
+		newargs := []string{}
+		if *flagDebug {
+			newargs = append(newargs, "-debug")
+		}
+		newargs = append(newargs, "-exec", "-shell", path)
 		newargs = append(newargs, args...)
 		cmd := exec.Command("mui-cgi", newargs...)
 		cmd.SysProcAttr = &syscall.SysProcAttr{Setsid: true}

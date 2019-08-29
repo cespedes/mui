@@ -36,7 +36,12 @@ func http_serve(ln net.Listener, id int, notes chan string, pipe_read, pipe_writ
 			}
 			p.Name = p.Name[:len(p.Name)-1]
 			p.Value = p.Value[:len(p.Value)-1]
-			t <- p
+			if len(p.Name) == 0 { // this is a "ping"
+				fmt.Fprint(pipe_write, "\000")
+			} else {
+				debug.Printf("mui-cgi.net: Sent to channel: %v\n", p)
+				t <- p
+			}
 		}
 	}()
 	err := http.Serve(ln, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -50,10 +55,13 @@ func http_serve(ln net.Listener, id int, notes chan string, pipe_read, pipe_writ
 			Stderr []byte  `json:"stderr"`
 			Params []param `json:"params"`
 		}
+		debug.Println("mui-cgi.net: starting")
+		output.Params = make([]param, 0)
 		L:
 		for {
 			select {
 				case p := <-t:
+					debug.Printf("mui-cgi.net: Received from channel: %v\n", p)
 					output.Params = append(output.Params, p)
 				default:
 					break L
@@ -61,7 +69,7 @@ func http_serve(ln net.Listener, id int, notes chan string, pipe_read, pipe_writ
 		}
 		output.Stdout, _ = ioutil.ReadAll(&buf_stdout)
 		output.Stderr, _ = ioutil.ReadAll(&buf_stderr)
-		output.Params = make([]param, 0)
+//		output.Stderr = []byte(fmt.Sprintf("debug = %#v\n", debug))
 		json, _ := json.MarshalIndent(output, "", "\t")
 		notes <- fmt.Sprintf("net: sending %d bytes of stdout, %d of stderr", len(output.Stdout), len(output.Stderr))
 		w.Header().Set("Content-Type", "application/json")
